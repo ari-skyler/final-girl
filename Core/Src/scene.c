@@ -12,7 +12,7 @@ uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 #define EQ  1U
 #define COMP 2U
 
-uint8_t active_frame = EQ;
+uint8_t active_frame = SPLASH;
 
 // single click button logic
 bool left_press = false; 
