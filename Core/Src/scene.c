@@ -1,9 +1,9 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "eq.c"
-#include "comp.c"
-#include "splash.c"
+#include "scenes/eq.c"
+#include "scenes/comp.c"
+#include "scenes/splash.c"
 
 uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 
