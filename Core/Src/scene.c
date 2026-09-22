@@ -14,7 +14,7 @@ uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 #define COMP 2
 #define DEBUG 3
 
-uint8_t active_frame = SPLASH;
+uint8_t active_frame = EQ;
 
 void handle_fn_left_press() {
   if (active_frame > 0) active_frame = active_frame - 1;

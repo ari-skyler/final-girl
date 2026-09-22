@@ -1,6 +1,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 uint8_t last_enc1_pos = 64;
 uint8_t last_enc2_pos = 64; 
@@ -18,8 +19,8 @@ struct Band {
 #define FREQ_HI_LIMIT 22000
 #define Q_LOW_LIMIT 10
 #define Q_HI_LIMIT 1800
-#define LVL_LOW_LIMIT -20
-#define LVL_HI_LIMIT 20
+#define LVL_LOW_LIMIT -15
+#define LVL_HI_LIMIT 15
 
 static const uint16_t default_band_freqs[8] = {20, 45, 60, 120, 200, 500, 1000, 10000};
 
@@ -176,7 +177,7 @@ void band_draw() {
   gfx_text(OLED_WIDTH/2-13U,  1U, label, DARK, SMALL);
 
   snprintf(label, sizeof label, "%d DB", b.lvl);
-  gfx_text(OLED_WIDTH-26U,  1U, label, DARK, SMALL);
+  gfx_text(OLED_WIDTH-(strlen(label) * 4),  1U, label, DARK, SMALL);
 
   snprintf(label, sizeof label, "BAND %d/8", selected_band+1);
   gfx_text(79U, OLED_HEIGHT-7U, label, LIGHT, LARGE);
@@ -197,8 +198,8 @@ void eq_draw(void) {
   // curve_draw();
 
   // STATIC COMPONENTS
-  gfx_text(108U, 8U, "20 DB", LIGHT, SMALL);
-    gfx_text(104U, 48U, "-20 DB", LIGHT, SMALL);
+  gfx_text(108U, 8U, "15 DB", LIGHT, SMALL);
+    gfx_text(104U, 48U, "-15 DB", LIGHT, SMALL);
   gfx_text(1U, OLED_HEIGHT-7U, "EQ", LIGHT, LARGE);
   gfx_fill_rect(0U, 31, OLED_WIDTH, 1U, true);
   gfx_fill_rect((OLED_WIDTH/2), 8U, 1U, DISPLAY_AREA_HEIGHT, true);
