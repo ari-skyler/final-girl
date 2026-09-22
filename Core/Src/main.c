@@ -5,9 +5,10 @@
 #include "font5x7.c"
 #include  "font4x6.c"         
 #include "graphics.c"             
-#include "input_controls.c"  
+#include "input_controls.c"
+#include "nav_helpers.c"
 #include "scene.c"     
-#include "static_components.c"      
+#include "static_components.c"
 
 // arm-none-eabi-gcc is the compiler
 // STM32_Programmer_CLI is the programmer executable
