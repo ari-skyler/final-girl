@@ -12,7 +12,11 @@ uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 #define SPLASH  0
 #define EQ  1
 #define COMP 2
-#define DEBUG 3
+#define CLIP 3
+#define LIM 4
+#define SPEC 5
+#define PRESETS 6
+#define DEBUG 7
 
 uint8_t active_frame = EQ;
 
