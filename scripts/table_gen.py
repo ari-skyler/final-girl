@@ -27,5 +27,5 @@ print("\n\n\nNOISE\n\n\n")
 
 print("{", end="")
 for k in range(table_size):
-    print(str(round(amplitude * random.random())), end=",")
+    print(str(round(amplitude/2 * (2 * random.random() - 1))), end=",")
 print("};", end="")

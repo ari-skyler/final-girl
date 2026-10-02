@@ -6,23 +6,11 @@
 #include "font4x6.c"         
 #include "graphics.c"             
 #include "input_controls.c"
+#include "audio_process.c"          
+#include "pcm5242.c"
 #include "nav_helpers.c"
 #include "scene.c"     
 #include "static_components.c"
-#include "pcm5242.c"         
-
-// arm-none-eabi-gcc is the compiler
-// STM32_Programmer_CLI is the programmer executable
-
-// basically just have to the compiler and the programmer executable in PATH
-// for mac run "brew install --cask gcc-arm-embedded" to download the compiler. it adds to the path automatically on my mac
-// download stm32 programmer and then find the STM32_Programmer_CLI file. then add it to ur path. then make flash from directory should work 
-
-// CubeMX generated functions
-void SystemClock_Config(void);
-static void MPU_Config(void);
-static void MX_ICACHE_Init(void);
-// CubeMX generated functions
 
 /// configures our gpio
 void debug_io(void)
@@ -35,9 +23,8 @@ void debug_io(void)
 }
 void pcm5242_io(void)
 {
-  // I2S pins use OSPEEDR=2 ("high"), not 3 ("very high"): the slower edges cut the EMI/ringing
-  // that made the 375 Hz tone look jittery/noisy on the breadboard (isolated by test - OSPEEDR is the fix).
-
+  // I2S pins use OSPEEDR=2 ("high"), not 3 ("very high"): the slower edges cut EMI/ringing
+  
   // A0 af 10 
   GPIOA->MODER   = (GPIOA->MODER   & ~(3UL << (2U * 0))) | (2UL << (2U * 0));
   GPIOA->OSPEEDR = (GPIOA->OSPEEDR & ~(3UL << (2U * 0))) | (2UL << (2U * 0));
@@ -75,12 +62,12 @@ void pcm5242_io(void)
 void pcm1822_io(void){}
 void oled_io(void)
 {
-  // I2C1_SDA on PB10, alternate function 11
-  GPIOB->MODER   = (GPIOB->MODER & ~(3UL << (2U * 10U))) | (2UL << (2U * 10U)); // Set pin to af mode
-  GPIOB->OTYPER  |= (1UL << 10U);   // open-drain
-  GPIOB->OSPEEDR &= ~(3UL << (2U * 10U));
-  GPIOB->PUPDR   &= ~(3UL << (2U * 10U)); // no pull up or down
-  GPIOB->AFR[1]  = (GPIOB->AFR[1] & ~(0xFUL << (4U * (10U - 8U)))) | (0xBUL << (4U * (10U - 8U)));  // Set to AF11 
+  // I2C1_SDA on PC9, alternate function 4
+  GPIOC->MODER   = (GPIOC->MODER & ~(3UL << (2U * 9U))) | (2UL << (2U * 9U)); // Set pin to af mode
+  GPIOC->OTYPER  |= (1UL << 9U);   // open-drain
+  GPIOC->OSPEEDR &= ~(3UL << (2U * 9U));
+  GPIOC->PUPDR   &= ~(3UL << (2U * 9U)); // no pull up or down
+  GPIOC->AFR[1]  = (GPIOC->AFR[1] & ~(0xFUL << (4U * (9U - 8U)))) | (0x4UL << (4U * (9U - 8U)));  // Set to AF4
 
   // I2C1_SCL on PC8, alternate function 4
   GPIOC->MODER   = (GPIOC->MODER & ~(3UL << (2U * 8U)))  | (2UL << (2U * 8U)); // Set pin to af mode
@@ -89,22 +76,31 @@ void oled_io(void)
   GPIOC->PUPDR   &= ~(3UL << (2U * 8U)); // no pull up or down
   GPIOC->AFR[1]  = (GPIOC->AFR[1] & ~(0xFUL << (4U * (8U - 8U))))  | (0x4UL << (4U * (8U - 8U)));   // Set to AF4
 }
-void inputs_io(void)
+void tact_sw_io(void)
 {
-  // encoder 1: A PC0, B PC1, switch PC2
-  GPIOC->MODER   &= ~(3UL << (2U * 0U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 0U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 0U))) | (1UL << (2U * 0U)); // pull-up
+ // tact 1 PA9
+  GPIOA->MODER   &= ~(3UL << (2U * 9U));  // input mode
+  GPIOA->OSPEEDR &= ~(3UL << (2U * 9U));
+  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 9U))) | (1UL << (2U * 9U)); // pull-up
 
-  GPIOC->MODER   &= ~(3UL << (2U * 1U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 1U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 1U))) | (1UL << (2U * 1U)); // pull-up
+  // tact 2 PA10
+  GPIOA->MODER   &= ~(3UL << (2U * 10U));  // input mode
+  GPIOA->OSPEEDR &= ~(3UL << (2U * 10U));
+  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 10U))) | (1UL << (2U * 10U)); // pull-up
 
-  GPIOC->MODER   &= ~(3UL << (2U * 2U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 2U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 2U))) | (1UL << (2U * 2U)); // pull-up
+  // tact 3 PA11
+  GPIOA->MODER   &= ~(3UL << (2U * 11U));  // input mode
+  GPIOA->OSPEEDR &= ~(3UL << (2U * 11U));
+  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 11U))) | (1UL << (2U * 11U)); // pull-up
 
-  // encoder 2: A PC4, B PC5, switch PB0
+  // tact 4 PA12
+  GPIOA->MODER   &= ~(3UL << (2U * 12U));  // input mode
+  GPIOA->OSPEEDR &= ~(3UL << (2U * 12U));
+  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 12U))) | (1UL << (2U * 12U)); // pull-up
+}
+void encoder_io(void)
+{
+  // encoder 1: A PC4, B PC5, switch PB0
   GPIOC->MODER   &= ~(3UL << (2U * 4U));  // input mode
   GPIOC->OSPEEDR &= ~(3UL << (2U * 4U));
   GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 4U))) | (1UL << (2U * 4U)); // pull-up
@@ -116,6 +112,19 @@ void inputs_io(void)
   GPIOB->MODER   &= ~(3UL << (2U * 0U));  // input mode
   GPIOB->OSPEEDR &= ~(3UL << (2U * 0U));
   GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 0U))) | (1UL << (2U * 0U)); // pull-up
+
+  // encoder 2: A PB1, B PB2, switch PB10
+  GPIOB->MODER   &= ~(3UL << (2U * 1U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 1U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 1U))) | (1UL << (2U * 1U)); // pull-up
+
+  GPIOB->MODER   &= ~(3UL << (2U * 2U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 2U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 2U))) | (1UL << (2U * 2U)); // pull-up
+
+  GPIOB->MODER   &= ~(3UL << (2U * 10U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 10U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 10U))) | (1UL << (2U * 10U)); // pull-up
 
   // encoder 3: A PB12, PB13, switch PB14
   GPIOB->MODER   &= ~(3UL << (2U * 12U));  // input mode
@@ -130,47 +139,30 @@ void inputs_io(void)
   GPIOB->OSPEEDR &= ~(3UL << (2U * 14U));
   GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 14U))) | (1UL << (2U * 14U)); // pull-up
 
-  // encoder 4: A PB15, B PC6, switch PC7
-  GPIOB->MODER   &= ~(3UL << (2U * 15U));  // input mode
-  GPIOB->OSPEEDR &= ~(3UL << (2U * 15U));
-  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 15U))) | (1UL << (2U * 15U)); // pull-up
+  // encoder 4: A PB6, B PB5, switch PB4
+  GPIOB->MODER   &= ~(3UL << (2U * 6U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 6U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 6U))) | (1UL << (2U * 6U)); // pull-up
 
-  GPIOC->MODER   &= ~(3UL << (2U * 6U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 6U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 6U))) | (1UL << (2U * 6U)); // pull-up
+  GPIOB->MODER   &= ~(3UL << (2U * 5U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 5U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 5U))) | (1UL << (2U * 5U)); // pull-up
 
-  GPIOC->MODER   &= ~(3UL << (2U * 7U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 7U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 7U))) | (1UL << (2U * 7U)); // pull-up
+  GPIOB->MODER   &= ~(3UL << (2U * 4U));  // input mode
+  GPIOB->OSPEEDR &= ~(3UL << (2U * 4U));
+  GPIOB->PUPDR    = (GPIOB->PUPDR & ~(3UL << (2U * 4U))) | (1UL << (2U * 4U)); // pull-up
 
-  // tact 1 PC9
-  GPIOC->MODER   &= ~(3UL << (2U * 9U));  // input mode
-  GPIOC->OSPEEDR &= ~(3UL << (2U * 9U));
-  GPIOC->PUPDR    = (GPIOC->PUPDR & ~(3UL << (2U * 9U))) | (1UL << (2U * 9U)); // pull-up
-
-  // tact 2 PA8
-  GPIOA->MODER   &= ~(3UL << (2U * 8U));  // input mode
-  GPIOA->OSPEEDR &= ~(3UL << (2U * 8U));
-  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 8U))) | (1UL << (2U * 8U)); // pull-up
-
-  // tact 3 PA9
-  GPIOA->MODER   &= ~(3UL << (2U * 9U));  // input mode
-  GPIOA->OSPEEDR &= ~(3UL << (2U * 9U));
-  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 9U))) | (1UL << (2U * 9U)); // pull-up
-
-  // tact 4 PA10
-  GPIOA->MODER   &= ~(3UL << (2U * 10U));  // input mode
-  GPIOA->OSPEEDR &= ~(3UL << (2U * 10U));
-  GPIOA->PUPDR    = (GPIOA->PUPDR & ~(3UL << (2U * 10U))) | (1UL << (2U * 10U)); // pull-up
+ 
 }
 void gpio_init(void)
 {
   // Enable clk access to all 3 gpio banks
   RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN | RCC_AHB2ENR_GPIOCEN);
 
-  debug_io();       // one debug led is here getting used as a tim6 led toggle
-  oled_io();       // i2c pins for the OLED
-  inputs_io();    // gpio for encoders and buttons
+  debug_io();        // one debug led is here getting used as a tim6 led toggle
+  oled_io();        // i2c pins for the OLED
+  tact_sw_io();    // gpio for tact switches
+  encoder_io();   // gpio for encoders
   pcm5242_io();  // i2s pins and mute control pin for dac
   pcm1822_io(); // i2s pins for adc
 }
@@ -207,7 +199,6 @@ int main(void)
   HAL_Init();
   HAL_NVIC_SetPriority(SysTick_IRQn, 0U, 0U);
   SystemClock_Config();
-  MX_ICACHE_Init();
   // HAL stuff done
 
   // our stuff
