@@ -1,6 +1,6 @@
 #include "main.h"
 
-void  comp_draw(void)
+void  presets_draw(void)
 {
     // STATIC COMPONENTS
   gfx_text(1U, OLED_HEIGHT-7U, "PRESETS", LIGHT, LARGE);

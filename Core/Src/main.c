@@ -160,7 +160,7 @@ int main(void)
   HAL_Init();
   HAL_NVIC_SetPriority(SysTick_IRQn, 0U, 0U);
   SystemClock_Config();
-  MX_ICACHE_Init();
+  // MX_ICACHE_Init();
 
   gpio_init();                       // heartbeat/debug LEDs, I2C SDA/SCL, all the inputs
   inputs_init();                     // sets known value for inputs 

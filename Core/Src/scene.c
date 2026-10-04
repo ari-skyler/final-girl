@@ -4,6 +4,10 @@
 #include "scenes/eq.c"
 #include "scenes/comp.c"
 #include "scenes/splash.c"
+#include "scenes/clip.c"
+#include "scenes/lim.c"
+#include "scenes/spec.c"
+#include "scenes/presets.c"
 #include "scenes/debug.c"
 
 uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
@@ -18,14 +22,14 @@ uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 #define PRESETS 6
 #define DEBUG 7
 
-uint8_t active_frame = EQ;
+uint8_t active_frame = COMP;
 
 void handle_fn_left_press() {
   if (active_frame > 0) active_frame = active_frame - 1;
 }
 
 void handle_fn_right_press() {
-  if (active_frame < 3) active_frame = active_frame + 1;
+  if (active_frame < 7) active_frame = active_frame + 1;
 }
 
 void listen_for_nav(void) {
@@ -56,6 +60,18 @@ void frame_draw(void)
       break;
     case COMP:
       switch_scene(comp_draw);
+      break;
+    case CLIP:
+      switch_scene(clip_draw);
+      break;
+    case LIM:
+      switch_scene(lim_draw);
+      break;
+    case SPEC:
+      switch_scene(spec_draw);
+      break;
+    case PRESETS:
+      switch_scene(presets_draw);
       break;
     case DEBUG:
       switch_scene(debug_draw);

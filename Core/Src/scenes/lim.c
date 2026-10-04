@@ -1,6 +1,6 @@
 #include "main.h"
 
-void  comp_draw(void)
+void  lim_draw(void)
 {
     // STATIC COMPONENTS
   gfx_text(1U, OLED_HEIGHT-7U, "LIMIT", LIGHT, LARGE);
