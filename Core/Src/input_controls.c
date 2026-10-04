@@ -45,25 +45,25 @@ static uint8_t  tact4_count;
 
 static void inputs_init(void)
 {
-  enc1_state    = (((GPIOC->IDR >> 0U) & 1U) << 1) | ((GPIOC->IDR >> 1U) & 1U); // initial state of encoder C0 and C1
+  enc1_state    = (((GPIOC->IDR >> 4U) & 1U) << 1) | ((GPIOC->IDR >> 5U) & 1U); // initial state of encoder C4 and C5
   enc1_position = 128;  // initial position of encoder (midpoint)
   enc1_sw_level = 1U;  // active low so at rest value is high 
-  enc1_sw_count   = 0U;
+  enc1_sw_count = 0U;
   
-  enc2_state    = (((GPIOC->IDR >> 4U) & 1U) << 1) | ((GPIOC->IDR >> 5U) & 1U); // initial state of encoder C4 and C5
+  enc2_state    = (((GPIOB->IDR >> 1U) & 1U) << 1) | ((GPIOB->IDR >> 2U) & 1U); // initial state of encoder B1 and B2
   enc2_position = 128;  // initial position of encoder (midpoint)
   enc2_sw_level = 1U;  // active low so at rest value is high 
-  enc2_sw_count   = 0U;
+  enc2_sw_count = 0U;
 
   enc3_state    = (((GPIOB->IDR >> 12U) & 1U) << 1) | ((GPIOB->IDR >> 13U) & 1U); // initial state of encoder B12 and B13
   enc3_position = 128;  // initial position of encoder (midpoint)
   enc3_sw_level = 1U;  // active low so at rest value is high 
-  enc3_sw_count   = 0U;
+  enc3_sw_count = 0U;
 
-  enc4_state    = (((GPIOB->IDR >> 15U) & 1U) << 1) | ((GPIOC->IDR >> 6U) & 1U); // initial state of encoder B15 and C6
+  enc4_state    = (((GPIOB->IDR >> 6U) & 1U) << 1) | ((GPIOB->IDR >> 5U) & 1U); // initial state of encoder B6 and B5
   enc4_position = 128;  // initial position of encoder (midpoint)
   enc4_sw_level = 1U;  // active low so at rest value is high 
-  enc4_sw_count   = 0U;
+  enc4_sw_count = 0U;
 
   tact1_level = 1U;  // active low so at rest value is high
   tact1_count = 0U;
@@ -78,11 +78,11 @@ static void inputs_init(void)
   tact4_count = 0U;
 }
 
-// encoder 1: A PC0, B PC1, switch PC2
+// encoder 1: A PC4, B PC5, switch PB0
 static void enc1_poll(void)
 {
-  uint8_t A = ((GPIOC->IDR >> 0U) & 1U);  // polls the input on C0
-  uint8_t B = ((GPIOC->IDR >> 1U) & 1U);  // polls the input on C1
+  uint8_t A = ((GPIOC->IDR >> 4U) & 1U);  // polls the input on C4
+  uint8_t B = ((GPIOC->IDR >> 5U) & 1U);  // polls the input on C5
   uint8_t current_state = ((A << 1) | B); // encodes state into 2 bits 
 
   // enc table magic. store previous state in bits 2 and 3 and new state in bits 0 and 1 
@@ -97,7 +97,7 @@ static void enc1_poll(void)
 // if it does then we register that and update the ouput value (debounced)
 static void enc1_sw_poll(void)
 {
-  uint8_t raw_input = (GPIOC->IDR >> 2U) & 1U; // polls input on C2
+  uint8_t raw_input = (GPIOB->IDR >> 0U) & 1U; // polls input on B0
   
   if (raw_input == enc1_sw_level) 
   {
@@ -111,11 +111,11 @@ static void enc1_sw_poll(void)
   enc1_sw_level = raw_input;
 }
 
-// encoder 2: A PC4, B PC5, switch PB0
+// encoder 2: A PB1, B PB2, switch PB
 static void enc2_poll(void)
 {
-  uint8_t A = ((GPIOC->IDR >> 4U) & 1U);  // polls the input on C4
-  uint8_t B = ((GPIOC->IDR >> 5U) & 1U);  // polls the input on C5
+  uint8_t A = ((GPIOB->IDR >> 1U) & 1U);  // polls the input on B1
+  uint8_t B = ((GPIOB->IDR >> 2U) & 1U);  // polls the input on B2
   uint8_t current_state = ((A << 1) | B); // encodes state into 2 bits 
 
   enc2_position   = enc2_position + enc_table[(enc2_state << 2) | current_state];
@@ -124,7 +124,7 @@ static void enc2_poll(void)
 }
 static void enc2_sw_poll(void)
 {
-  uint8_t raw_input = (GPIOB->IDR >> 0U) & 1U; // polls input on B0
+  uint8_t raw_input = (GPIOB->IDR >> 10U) & 1U; // polls input on B10
   
   if (raw_input == enc2_sw_level) 
   {
@@ -165,11 +165,11 @@ static void enc3_sw_poll(void)
   enc3_sw_level = raw_input;
 }
 
-// encoder 4: A PB14, B PC6, switch PC7
+// encoder 4: A PB6, B PB5, switch PB4
 static void enc4_poll(void)
 {
-  uint8_t A = ((GPIOB->IDR >> 15U) & 1U);  // polls the input on B15
-  uint8_t B = ((GPIOC->IDR >> 6U) & 1U);  // polls the input on C6
+  uint8_t A = ((GPIOB->IDR >> 6U) & 1U);  // polls the input on B6
+  uint8_t B = ((GPIOB->IDR >> 5U) & 1U);  // polls the input on B5
   uint8_t current_state = ((A << 1) | B); // encodes state into 2 bits 
 
   enc4_position   = enc4_position + enc_table[(enc4_state << 2) | current_state];
@@ -178,7 +178,7 @@ static void enc4_poll(void)
 }
 static void enc4_sw_poll(void)
 {
-  uint8_t raw_input = (GPIOC->IDR >> 7U) & 1U; // polls input on C7
+  uint8_t raw_input = (GPIOB->IDR >> 4U) & 1U; // polls input on B4
   
   if (raw_input == enc4_sw_level) 
   {
@@ -192,10 +192,10 @@ static void enc4_sw_poll(void)
   enc4_sw_level = raw_input;
 }
 
-// tact 1 PC9
+// tact 1 PA9
 static void tact1_poll(void)
 {
-  uint8_t raw_input = (GPIOC->IDR >> 9U) & 1U; // polls input on C9
+  uint8_t raw_input = (GPIOA->IDR >> 9U) & 1U; // polls input on A9
   
   if (raw_input == tact1_level)
   {
@@ -208,10 +208,10 @@ static void tact1_poll(void)
   tact1_count   = 0U;
   tact1_level = raw_input;
 }
-// tact 2 PCA8
+// tact 2 PA10
 static void tact2_poll(void)
 {
-  uint8_t raw_input = (GPIOA->IDR >> 8U) & 1U; // polls input on A8
+  uint8_t raw_input = (GPIOA->IDR >> 10U) & 1U; // polls input on A10
   
   if (raw_input == tact2_level)
   {
@@ -224,10 +224,10 @@ static void tact2_poll(void)
   tact2_count   = 0U;
   tact2_level = raw_input;
 }
-// tact 3 PCA9
+// tact 3 PA11
 static void tact3_poll(void)
 {
-  uint8_t raw_input = (GPIOA->IDR >> 9U) & 1U; // polls input on A9
+  uint8_t raw_input = (GPIOA->IDR >> 11U) & 1U; // polls input on A11
 
   if (raw_input == tact3_level)
   {
@@ -240,10 +240,10 @@ static void tact3_poll(void)
   tact3_count   = 0U;
   tact3_level = raw_input;
 }
-// tact 4 PCA10
+// tact 4 PA12
 static void tact4_poll(void)
 {
-  uint8_t raw_input = (GPIOA->IDR >> 10U) & 1U; // polls input on A10
+  uint8_t raw_input = (GPIOA->IDR >> 12U) & 1U; // polls input on A12
   
   if (raw_input == tact4_level)
   {

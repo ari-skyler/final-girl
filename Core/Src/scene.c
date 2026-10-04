@@ -9,6 +9,7 @@
 #include "scenes/spec.c"
 #include "scenes/presets.c"
 #include "scenes/debug.c"
+#include "scenes/scope.c"
 
 uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 
@@ -21,6 +22,7 @@ uint8_t scene_fb[OLED_FB_BYTES]; // static frame buffer
 #define SPEC 5
 #define PRESETS 6
 #define DEBUG 7
+#define SCOPE 8
 
 uint8_t active_frame = COMP;
 
@@ -29,7 +31,7 @@ void handle_fn_left_press() {
 }
 
 void handle_fn_right_press() {
-  if (active_frame < 7) active_frame = active_frame + 1;
+  if (active_frame < 8) active_frame = active_frame + 1;
 }
 
 void listen_for_nav(void) {
@@ -75,6 +77,9 @@ void frame_draw(void)
       break;
     case DEBUG:
       switch_scene(debug_draw);
+      break;
+    case SCOPE:
+      switch_scene(scope_draw);
       break;
     default: break; // draw nothing
   }

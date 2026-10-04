@@ -29,40 +29,11 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h5xx_hal.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
-/* Exported functions prototypes ---------------------------------------------*/
+// CubeMX generated functions
 void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
-
-/* USER CODE END EFP */
-
-/* Private defines -----------------------------------------------------------*/
-
-/* USER CODE BEGIN Private defines */
-/* Heartbeat LED on PC3 (same pin map as finalizer_codebase; active-low: pin RESET = lit). */
-#define LED_Pin GPIO_PIN_3
-#define LED_GPIO_Port GPIOC
-/* USER CODE END Private defines */
+void SystemClock_Config(void);
+static void MPU_Config(void);
+// CubeMX generated functions
 
 #ifdef __cplusplus
 }
